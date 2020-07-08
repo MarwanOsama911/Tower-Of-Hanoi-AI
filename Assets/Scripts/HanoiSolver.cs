@@ -24,7 +24,7 @@ public class HanoiSolver : MonoBehaviour
     /// </summary>
     void Start()
     {
-        HanioSlover(disks.Count, sourceTowerPoint.position, destinationTowerPoint.position, destinationTowerPoint.position);
+        HanioSlover(disks.Count, sourceTowerPoint.position, destinationTowerPoint.position, tempTowerPoint.position);
     }
     /// <summary>
     /// Hanio disk Simualtion "Recursion Algorithm"
@@ -35,13 +35,13 @@ public class HanoiSolver : MonoBehaviour
     /// <param name="tempPosition"> the temo tower point position </param>
     void HanioSlover(int numberofdisks, Vector3 sourcePoistion, Vector3 destinationPosition, Vector3 tempPosition)
     {
-        if (numberofdisks >= 0)
+        if (numberofdisks > 0)
         {
             HanioSlover(numberofdisks - 1, sourcePoistion, tempPosition, destinationPosition);
-            PoistionStoring(disks[numberofdisks - 1], sourcePoistion, tempPosition);
+            PoistionStoring(disks[numberofdisks - 1], sourcePoistion, destinationPosition);
             HanioSlover(numberofdisks - 1, tempPosition, destinationPosition, sourcePoistion);
         }
-
+        StartCoroutine(MoveAllDisks());
     }
     /// <summary>
     /// Sotring the position for every disk movement and will be (2^n-1) step
@@ -59,34 +59,35 @@ public class HanoiSolver : MonoBehaviour
     /// Simulate all the disks movement to achieve the AI
     /// </summary>
     /// <returns></returns>
-    IEnumerable MoveAllDisks()
+    IEnumerator MoveAllDisks()
     {
-        foreach (var item in diskOrder)
+        for (int i = 0; i < Mathf.Pow(2, disks.Count) - 1; i++)
         {
             yield return new WaitForSeconds(2f);
-            StartCoroutine(SimulateMovement(item, diskspositionFrom[index], diskspositionTo[index]));
-            index++;
+            StartCoroutine(SimulateMovement(diskOrder[i], diskspositionFrom[i], diskspositionTo[i]));
         }
+
     }
 
     /// <summary>
     /// Simulate the disk movement with the external script iTween to make an animation while moving the disks also
     /// </summary>
-    /// <param name="gameObjectToMove"> disk we want to simulate </param>
+    /// <param name="diskToMove"> disk we want to simulate </param>
     /// <param name="from"> the first position which the disk will move from </param>
     /// <param name="to">the destination position which the disk will move to it </param>
     /// <returns></returns>
-    IEnumerator SimulateMovement(GameObject gameObjectToMove, Vector3 from, Vector3 to)
+    IEnumerator SimulateMovement(GameObject diskToMove, Vector3 from, Vector3 to)
     {
-        iTween.MoveTo(gameObjectToMove, from, 2 / speed);
+        iTween.MoveTo(diskToMove, from, 2 / speed);
         yield return new WaitForSeconds(2 / speed);
-        iTween.MoveTo(gameObjectToMove, to, 2 / speed);
+        iTween.MoveTo(diskToMove, to, 2 / speed);
         yield return new WaitForSeconds(2 / speed);
 
+
         RaycastHit hit;
-        if (Physics.Raycast(to + Vector3.down * 4, Vector3.down, out hit, 10))
+        if (Physics.Raycast(to, Vector3.down, out hit, 6))
         {
-            iTween.MoveTo(gameObjectToMove, hit.point + Vector3.up * .4f, 2 / speed);
+            iTween.MoveTo(diskToMove, hit.point + Vector3.up * .05f, 2 / speed);
             yield return new WaitForSeconds(2 / speed);
         }
     }
